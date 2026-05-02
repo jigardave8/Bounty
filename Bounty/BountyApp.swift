@@ -12,6 +12,8 @@ struct BountyApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+            // Force dark mode at the root to protect the Void aesthetic
+                            .preferredColorScheme(.dark) 
         }
     }
 }
