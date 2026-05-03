@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @State private var store = BountyStore()
+
     
     init() {
         // Tactical overrides for the native TabBar to mimic Liquid Glass
@@ -64,5 +66,6 @@ struct ContentView: View {
                 }
         }
         .tint(Theme.heroCyan) // Fallback tint for legacy rendering
+        .environment(store)
     }
 }

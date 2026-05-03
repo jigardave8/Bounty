@@ -8,7 +8,10 @@
 import SwiftUI
 
 struct VaultView: View {
+    @Environment(BountyStore.self) private var store // Inject global state
+
     @State private var rippleSize: CGFloat = 0
+    
     let currentBalance: Int = 1250 // Fetched from Firestore
 
     var body: some View {
@@ -35,12 +38,17 @@ struct VaultView: View {
                         .animation(Animation.easeInOut(duration: 4.0).repeatForever(), value: rippleSize)
                     
                     VStack(alignment: .leading) {
-                        Text("TOTAL RESERVE")
-                            .font(.caption).foregroundColor(.white.opacity(0.8))
-                        Text("₹\(currentBalance)")
-                            .font(.system(size: 48, weight: .heavy, design: .rounded))
-                            .foregroundColor(.white)
-                        Spacer()
+                                           Text("TOTAL RESERVE")
+                                               .font(.caption).foregroundColor(.white.opacity(0.8))
+                                           
+                                           // Binding the Live Sync
+                                           Text("₹\(store.vaultReserve)")
+                                               .font(.system(size: 48, weight: .heavy, design: .rounded))
+                                               .foregroundColor(.white)
+                                               .contentTransition(.numericText()) // Animate burning balance
+                                           
+                                           Spacer()
+                        
                         HStack {
                             Text("UPI BYPASS // ACTIVE")
                                 .font(Theme.terminalFont)

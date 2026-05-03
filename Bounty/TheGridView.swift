@@ -8,24 +8,23 @@
 import SwiftUI
 
 struct TheGridView: View {
-    @State private var pulse: Bool = false
-    
+    @Environment(BountyStore.self) private var store // Inject
+      @State private var pulse: Bool = false
     var body: some View {
         NavigationStack {
             ZStack {
                 Theme.voidBlack.ignoresSafeArea()
                 
                 ScrollView(.vertical, showsIndicators: false) {
-                    LazyVStack(spacing: 24) {
-                        ForEach(mockBounties) { bounty in
-                            NavigationLink(destination: MissionHUDView(bounty: bounty)) {
-                                gridCell(for: bounty)
-                            }
-                        }
-                    }
-                    .padding()
-                }
-            }
+                              LazyVStack(spacing: 24) {
+                                  ForEach(store.activeBounties) { bounty in // Map via Firebase Brain
+                                      NavigationLink(destination: MissionHUDView(bounty: bounty)) {
+                                          gridCell(for: bounty)
+                                      }
+                                  }
+                              }
+                              .padding()
+                          }            }
             .navigationTitle("THERMAL GRID")
             .toolbarColorScheme(.dark, for: .navigationBar)
             .toolbarBackground(.visible, for: .navigationBar)

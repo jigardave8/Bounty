@@ -19,16 +19,16 @@ struct Theme {
 
 // MARK: - Mock Models
 struct Bounty: Identifiable, Hashable {
-    let id = UUID()
+    let id: String // Changed to String to perfectly sync with Firebase Document ID
     let title: String
     let target: String
-    let poolO: Int // Hero
-    let poolX: Int // Chaos
+    let poolO: Int
+    let poolX: Int
     let ytVideoId: String
 }
 
-// Mock Data
+// Mock Data updated
 let mockBounties: [Bounty] = [
-    Bounty(title: "SLUMDOG CLEANUP", target: "Sector 7 Sewers", poolO: 450, poolX: 120, ytVideoId: "jfKfPfyJRdk"), // Lo-fi beats stream id for mock
-    Bounty(title: "URBAN PARKOUR 04", target: "Abandoned Factory", poolO: 200, poolX: 890, ytVideoId: "9X0Srx_yI7s")
+    Bounty(id: "mission_01_beta", title: "SLUMDOG CLEANUP", target: "Sector 7 Sewers", poolO: 450, poolX: 120, ytVideoId: "jfKfPfyJRdk"),
+    Bounty(id: "mission_02_alpha", title: "URBAN PARKOUR 04", target: "Abandoned Factory", poolO: 200, poolX: 890, ytVideoId: "9X0Srx_yI7s")
 ]

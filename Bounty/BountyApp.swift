@@ -6,14 +6,29 @@
 //
 
 import SwiftUI
+import FirebaseCore // Added
+
+// Add AppDelegate intercept for Firebase
+class AppDelegate: NSObject, UIApplicationDelegate {
+  func application(_ application: UIApplication,
+                   didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    FirebaseApp.configure()
+    return true
+  }
+}
 
 @main
 struct BountyApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate // Added
+//    @State private var store = BountyStore()
+
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
-            // Force dark mode at the root to protect the Void aesthetic
-                            .preferredColorScheme(.dark) 
+//                .environment(store) // 2. Broadcast globally
+
+                .preferredColorScheme(.dark)
         }
     }
 }

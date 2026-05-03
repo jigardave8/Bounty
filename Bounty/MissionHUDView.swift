@@ -27,11 +27,12 @@ struct YouTubeStreamView: UIViewRepresentable {
 }
 
 struct MissionHUDView: View {
+    @Environment(BountyStore.self) private var store
     let bounty: Bounty
     @State private var tipDragOffset: CGFloat = 0
-    @State private var localO: Int = 0
-    @State private var localX: Int = 0
-
+    @State private var jamTrigger: Int = 0 // Haptic fail trigger
+    
+    
     var body: some View {
         ZStack {
             Theme.voidBlack.ignoresSafeArea()
@@ -39,7 +40,7 @@ struct MissionHUDView: View {
             // Video Feed (Ignore Safe Area for immersion)
             YouTubeStreamView(videoId: bounty.ytVideoId)
                 .ignoresSafeArea()
-                .opacity(0.8) // Simulate sunglasses/hud shade
+                .opacity(0.8) // Simulate HUD visor shade
             
             // UI Overlay
             VStack {
@@ -59,31 +60,38 @@ struct MissionHUDView: View {
                 
                 Spacer()
                 
-                // Thermal Action Pool Data
+                // Thermal Action Pool Data natively tracks the cloud
                 HStack(alignment: .bottom) {
-                    VStack {
-                        Text("O-POOL: \(bounty.poolO + localO)")
-                            .font(Theme.terminalFont).foregroundColor(Theme.heroCyan)
-                        Text("X-POOL: \(bounty.poolX + localX)")
-                            .font(Theme.terminalFont).foregroundColor(Theme.chaosRed)
+                    VStack(alignment: .leading) {
+                        Text("O-POOL: \(store.liveO)")
+                            .font(Theme.terminalFont)
+                            .foregroundColor(Theme.heroCyan)
+                            .contentTransition(.numericText()) // Animate hardware native ticking
+                        
+                        Text("X-POOL: \(store.liveX)")
+                            .font(Theme.terminalFont)
+                            .foregroundColor(Theme.chaosRed)
+                            .contentTransition(.numericText())
                     }
                     Spacer()
                 }
                 .padding(.horizontal)
                 
-                // Drag interactions (Swipe to cast decision)
+                // Swipe Action Deck
                 HStack {
                     Image(systemName: "largecircle.fill.circle")
                         .font(.system(size: 40))
                         .foregroundColor(Theme.heroCyan)
-                        .offset(x: min(tipDragOffset, 0) == 0 ? max(0, tipDragOffset) : 0) // Stretch effect logic mapped right
+                        .offset(x: min(tipDragOffset, 0) == 0 ? max(0, tipDragOffset) : 0)
                         .gesture(
                             DragGesture()
                                 .onChanged { val in if val.translation.width > 0 { tipDragOffset = val.translation.width } }
                                 .onEnded { val in resolveDrag(val.translation.width, isHero: true) }
                         )
-                        .sensoryFeedback(.impact(weight: .heavy), trigger: localO)
-
+                        .sensoryFeedback(.impact(weight: .heavy), trigger: store.liveO)
+                        .sensoryFeedback(.error, trigger: jamTrigger)
+                    
+                    
                     Spacer()
                     
                     Image(systemName: "xmark.shield.fill")
@@ -95,19 +103,33 @@ struct MissionHUDView: View {
                                 .onChanged { val in if val.translation.width < 0 { tipDragOffset = val.translation.width } }
                                 .onEnded { val in resolveDrag(val.translation.width, isHero: false) }
                         )
-                        .sensoryFeedback(.impact(weight: .heavy), trigger: localX)
+                        .sensoryFeedback(.impact(weight: .heavy), trigger: store.liveX)
+                        .sensoryFeedback(.error, trigger: jamTrigger)
+                    
                 }
                 .padding(32)
             }
         }
-        .toolbar(.hidden, for: .navigationBar) // Hide bar inside the cockpit
+        .toolbar(.hidden, for: .navigationBar)
+        .onAppear {
+            store.tuneIntoThermalFrequency(bountyId: bounty.id)
+        }
+        .onDisappear {
+            store.dropThermalFrequency(bountyId: bounty.id)
+        }
     }
     
     private func resolveDrag(_ translation: CGFloat, isHero: Bool) {
         let threshold: CGFloat = 80
         if abs(translation) > threshold {
-            if isHero { localO += 10 } else { localX += 10 }
+            let fired = store.dispatchThermalPulse(bountyId: bounty.id, isHero: isHero, tipAmount: 10)
+            
+            if !fired {
+                // FAILED: Not enough money! Trigger haptic stutter & bounce
+                jamTrigger += 1
+            }
         }
+        
         withAnimation(Theme.tacticalSpring) {
             tipDragOffset = 0
         }
