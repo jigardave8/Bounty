@@ -8,86 +8,23 @@
 import SwiftUI
 
 struct VaultView: View {
-    @Environment(BountyStore.self) private var store // Inject global state
-
-    @State private var rippleSize: CGFloat = 0
+    @Environment(BountyStore.self) private var store
     
-    let currentBalance: Int = 1250 // Fetched from Firestore
-
     var body: some View {
         ZStack {
             Theme.voidBlack.ignoresSafeArea()
-            
-            VStack(spacing: 40) {
-                Text("VAULT: P2P ROUTING")
-                    .font(Theme.terminalFont)
-                    .foregroundColor(.gray)
+            VStack(spacing: 20) {
+                Text("VAULT RESERVE").font(Theme.terminalFont).foregroundColor(.gray)
+                Text("₹\(store.vaultReserve)")
+                    .font(.system(size: 50, weight: .black, design: .monospaced))
+                    .foregroundColor(Theme.heroCyan)
                 
-                // Liquid Card
-                ZStack {
-                    RoundedRectangle(cornerRadius: 24)
-                        .fill(.ultraThinMaterial)
-                        .frame(height: 200)
-                    
-                    // Liquid Blob Simulation
-                    Circle()
-                        .fill(LinearGradient(colors: [Theme.heroCyan, Color.purple], startPoint: .topLeading, endPoint: .bottomTrailing))
-                        .frame(width: 150)
-                        .blur(radius: 40)
-                        .offset(x: rippleSize, y: -rippleSize/2)
-                        .animation(Animation.easeInOut(duration: 4.0).repeatForever(), value: rippleSize)
-                    
-                    VStack(alignment: .leading) {
-                                           Text("TOTAL RESERVE")
-                                               .font(.caption).foregroundColor(.white.opacity(0.8))
-                                           
-                                           // Binding the Live Sync
-                                           Text("₹\(store.vaultReserve)")
-                                               .font(.system(size: 48, weight: .heavy, design: .rounded))
-                                               .foregroundColor(.white)
-                                               .contentTransition(.numericText()) // Animate burning balance
-                                           
-                                           Spacer()
-                        
-                        HStack {
-                            Text("UPI BYPASS // ACTIVE")
-                                .font(Theme.terminalFont)
-                                .foregroundColor(.green)
-                            Spacer()
-                        }
-                    }
-                    .padding(24)
+                Button("TOP UP VIA UPI") {
+                    let url = URL(string: "upi://pay?pa=test@upi&pn=BountySystem")!
+                    UIApplication.shared.open(url)
                 }
-                .padding()
-                .onAppear { rippleSize = 60 }
-                
-                Button(action: initializeUPIIntent) {
-                    HStack {
-                        Image(systemName: "plus.diamond.fill")
-                        Text("CHARGE RESERVE VIA UPI")
-                    }
-                    .font(.headline)
-                    .foregroundColor(Theme.voidBlack)
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Theme.heroCyan)
-                    .cornerRadius(12)
-                }
-                .padding(.horizontal)
+                .padding().background(Color.white.opacity(0.1)).cornerRadius(8)
             }
-        }
-    }
-    
-    private func initializeUPIIntent() {
-        // DeepLink Generation logic. $0 Transaction Fees.
-        // Requires info.plist URL Type entries for production.
-        let amount = "500" // Hardcoded test payload
-        guard let url = URL(string: "upi://pay?pa=yourvpa@upi&pn=BountySystem&cu=INR&am=\(amount)") else { return }
-        
-        if UIApplication.shared.canOpenURL(url) {
-            UIApplication.shared.open(url)
-        } else {
-            print("Fallback to Web UI Stripe Payment / Instruction UI")
         }
     }
 }
